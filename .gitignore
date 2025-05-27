@@ -65,6 +65,7 @@ yarn-error.log*
 media/
 static/
 dist/
+*.tar.gz
 
 # Coverage reports
 htmlcov/

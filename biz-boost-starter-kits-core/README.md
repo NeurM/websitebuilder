@@ -1,73 +1,61 @@
-# Welcome to your Lovable project
+# Biz Boost Starter Kits Core
 
-## Project info
+The core package for the Biz Boost Starter Kits project, containing shared functionality and components.
 
-**URL**: https://lovable.dev/projects/deaa607c-fd52-4076-af27-4abba9078371
+## Features
 
-## How can I edit this code?
+- Core business logic
+- Shared utilities
+- Common components
+- Type definitions
+- Helper functions
 
-There are several ways of editing your application.
+## Installation
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/deaa607c-fd52-4076-af27-4abba9078371) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+npm install @biz-boost/starter-kits-core
 ```
 
-**Edit a file directly in GitHub**
+## Usage
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```typescript
+import { Component } from '@biz-boost/starter-kits-core';
 
-**Use GitHub Codespaces**
+// Use the component
+<Component />
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Development
 
-## What technologies are used for this project?
+### Prerequisites
+- Node.js 18 or higher
+- npm or yarn
 
-This project is built with:
+### Setup
+1. Clone the repository
+2. Install dependencies:
+```bash
+npm install
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Building
+```bash
+npm run build
+```
 
-## How can I deploy this project?
+### Testing
+```bash
+npm test
+```
 
-Simply open [Lovable](https://lovable.dev/projects/deaa607c-fd52-4076-af27-4abba9078371) and click on Share -> Publish.
+## Contributing
 
-## Can I connect a custom domain to my Lovable project?
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-Yes it is!
+## License
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License - see the LICENSE file for details.
