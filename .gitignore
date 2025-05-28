@@ -131,3 +131,7 @@ lerna-debug.log*
 
 # Vite
 .vite/
+
+# Large files
+*.zip
+biz-boost-starter-kits*.zip
