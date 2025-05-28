@@ -28,6 +28,9 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# URL settings
+APPEND_SLASH = True
+
 # Application definition
 # Apps that should be in the public schema
 SHARED_APPS = [
@@ -131,7 +134,7 @@ DATABASE_ROUTERS = (
 # Tenant configuration
 DATABASE_SCHEMA = 'public'
 PUBLIC_SCHEMA_NAME = 'public'
-PUBLIC_SCHEMA_URLCONF = 'website_builder.urls_public'
+PUBLIC_SCHEMA_URLCONF = 'website_builder.urls'
 
 # Custom tenant middleware settings
 TENANT_DOMAIN_FIELD = 'domain'  # Use the 'domain' field from Domain model
@@ -293,7 +296,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
@@ -301,6 +304,12 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS_OPTIONS': {
+        'title': 'Website Builder API',
+        'description': 'API endpoints for the website builder',
+        'version': '1.0.0',
+    },
 }
 
 # JWT settings

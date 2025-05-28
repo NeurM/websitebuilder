@@ -19,6 +19,8 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
+from rest_framework import viewsets
+from rest_framework.response import Response
 from websites.views import WebsiteViewSet, FrontendAppView
 from websites.views_public import (
     WebsiteViewSet as PublicWebsiteViewSet,
@@ -39,8 +41,15 @@ logger = logging.getLogger(__name__)
 router = DefaultRouter()
 router.register(r'websites', WebsiteViewSet, basename='website')
 
+# Dummy viewset for testing
+class DummyViewSet(viewsets.ViewSet):
+    def list(self, request):
+        return Response({"hello": "world"})
+
 # Public API router
+print("✅ Registering public API routes")
 public_router = DefaultRouter()
+public_router.register(r'dummy', DummyViewSet, basename='dummy')
 public_router.register(r'websites', PublicWebsiteViewSet, basename='public-website')
 public_router.register(r'website-configs', PublicWebsiteConfigViewSet, basename='public-website-config')
 public_router.register(r'templates', PublicTemplateViewSet, basename='public-template')
@@ -48,26 +57,18 @@ public_router.register(r'preview-emails', PublicPreviewEmailViewSet, basename='p
 public_router.register(r'preview-email-trackers', PublicPreviewEmailTrackerViewSet, basename='public-preview-email-tracker')
 public_router.register(r'bulk-website-creators', PublicBulkWebsiteCreatorViewSet, basename='public-bulk-website-creator')
 
-# API URL patterns
-api_urlpatterns = [
-    path('', include(router.urls)),
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-]
-
-# Public API URL patterns
-public_api_urlpatterns = [
-    path('', include(public_router.urls)),
-]
-
 # Main URL patterns
 urlpatterns = [
     # Admin URLs
     path('admin/', admin.site.urls),
     
     # API URLs - these must come before the frontend catch-all
-    path('api/', include(api_urlpatterns)),
-    path('public/api/', include(public_api_urlpatterns)),
+    path('api/', include(router.urls)),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Public API URLs
+    path('public/api/', include(public_router.urls)),
     
     # Static files
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),

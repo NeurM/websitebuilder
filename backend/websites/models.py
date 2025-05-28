@@ -87,10 +87,6 @@ class Website(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Supabase specific fields
-    supabase_id = models.CharField(max_length=100, blank=True, null=True)
-    supabase_url = models.URLField(blank=True, null=True)
-    
     # Website settings
     settings = models.JSONField(default=dict, blank=True)
     
@@ -104,6 +100,17 @@ class Website(models.Model):
     twitter_url = models.URLField(blank=True)
     instagram_url = models.URLField(blank=True)
     linkedin_url = models.URLField(blank=True)
+    
+    # Analytics settings
+    analytics = models.JSONField(default=dict, blank=True)
+    
+    # Cookie settings
+    cookies = models.JSONField(default=dict, blank=True)
+    
+    # Deployment settings
+    deployment_status = models.CharField(max_length=50, blank=True, null=True)
+    deployment_url = models.URLField(blank=True, null=True)
+    last_deployed_at = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         verbose_name = _('Website')

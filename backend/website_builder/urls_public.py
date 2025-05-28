@@ -31,45 +31,26 @@ router.register(r'bulk-website-creators', BulkWebsiteCreatorViewSet, basename='p
 
 # Public API URL patterns
 urlpatterns = [
-    path('', include(router.urls)),
-]
-
-# Public schema URL patterns
-urlpatterns += [
     # Admin URLs
     path('admin/', admin.site.urls),
     
-    # API URLs
-    path('api/', include(router.urls)),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Public API URLs - these must come before the frontend catch-all
+    path('public/api/', include(router.urls)),
+    path('public/api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('public/api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Static files
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    re_path(r'^frontend_static/(?P<path>.*)$', serve, {'document_root': settings.FRONTEND_DIR}),
+    
+    # Frontend catch-all - this must be last and should not match API routes
+    re_path(r'^(?!public/api/)(?!admin/)(?!static/)(?!frontend_static/).*$', FrontendAppView.as_view(), name='frontend'),
 ]
 
 # Serve static files in development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# Serve frontend static files
-def serve_frontend_static(request, path):
-    logger.info(f"Serving frontend static file: {path}")
-    file_path = os.path.join(settings.FRONTEND_DIR, path)
-    if os.path.exists(file_path):
-        logger.info(f"File exists at: {file_path}")
-        return serve(request, path, document_root=settings.FRONTEND_DIR)
-    logger.warning(f"File not found at: {file_path}")
-    return FrontendAppView.as_view()(request)
-
-# Add frontend routes
-urlpatterns += [
-    # Serve static files
-    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
-    re_path(r'^frontend_static/(?P<path>.*)$', serve, {'document_root': settings.FRONTEND_DIR}),
-    # Root URL - must be before the catch-all pattern
-    path('', FrontendAppView.as_view(), name='home'),
-    # Catch-all for frontend routes
-    re_path(r'^.*$', FrontendAppView.as_view(), name='frontend'),
-]
 
 logger.info("URL patterns configured:")
 for pattern in urlpatterns:
