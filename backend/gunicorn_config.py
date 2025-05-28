@@ -1,11 +1,13 @@
 import multiprocessing
 import os
 
-# Gunicorn config
+# Server socket
 bind = f"0.0.0.0:{os.getenv('PORT', '8000')}"
+backlog = 2048
+
+# Worker processes
 workers = multiprocessing.cpu_count() * 2 + 1
-worker_class = 'gthread'
-threads = 3
+worker_class = 'uvicorn.workers.UvicornWorker'
 worker_connections = 1000
 timeout = 30
 keepalive = 2
@@ -15,12 +17,12 @@ accesslog = '-'
 errorlog = '-'
 loglevel = 'info'
 
-# SSL (uncomment and configure if using SSL)
-# keyfile = '/path/to/keyfile'
-# certfile = '/path/to/certfile'
-
 # Process naming
 proc_name = 'website_builder'
+
+# SSL
+keyfile = os.getenv('SSL_KEYFILE', None)
+certfile = os.getenv('SSL_CERTFILE', None)
 
 # Server mechanics
 daemon = False

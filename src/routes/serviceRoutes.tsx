@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from "react";
 import { RouteConfig } from "../types/template";
 import { serviceProData } from "../data/serviceProData";

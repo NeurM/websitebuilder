@@ -8,7 +8,6 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { useTemplateTheme } from '@/context/TemplateThemeContext';
 import { useLanguage } from '@/context/LanguageContext';
 import GeminiPersistentChat from '@/components/chatbot/GeminiPersistentChat';
-import { saveWebsiteConfig } from '@/utils/supabase';
 import { tradecraftData } from '@/data/tradecraftData';
 import { retailData } from '@/data/retailData';
 import { serviceProData } from '@/data/serviceProData';
@@ -17,8 +16,8 @@ import { TemplateCard } from '@/components/templates/TemplateCard';
 import { FeatureSection } from '@/components/templates/FeatureSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Template } from '@/types/api';
-import { templateService } from '@/services/api';
+import { Template, WebsiteConfig } from '@/types/api';
+import { templateService, websiteService } from '@/services/api';
 import { useToast } from '@/components/ui/use-toast';
 
 const Templates: React.FC = () => {
@@ -121,17 +120,38 @@ const Templates: React.FC = () => {
 
       if (user) {
         const templateId = template.path.replace('/', '');
-        const { error } = await saveWebsiteConfig({
+        const websiteConfig: Partial<WebsiteConfig> = {
           template_id: templateId,
           company_name: companyName,
           domain_name: domainName,
           logo: logoUrl,
           color_scheme: selectedPrimaryColor || template.primaryColor,
-          secondary_color_scheme: selectedSecondaryColor || template.secondaryColor
-        });
+          secondary_color_scheme: selectedSecondaryColor || template.secondaryColor,
+          analytics: {
+            google_analytics_id: null,
+            google_tag_manager_id: null,
+            facebook_pixel_id: null,
+            custom_analytics_script: null
+          },
+          cookies: {
+            enabled: true,
+            banner_text: 'We use cookies to enhance your experience.',
+            accept_button_text: 'Accept All',
+            decline_button_text: 'Decline All',
+            cookie_policy_url: null,
+            cookie_duration: 365,
+            cookie_categories: {
+              necessary: true,
+              analytics: true,
+              marketing: true,
+              preferences: true
+            }
+          }
+        };
 
-        if (error) {
-          console.error("Error saving website config:", error);
+        const response = await websiteService.createWebsiteConfig(websiteConfig);
+
+        if (!response.data) {
           toast({
             title: t('errors.title') || "Error",
             description: t('errors.saveWebsite') || "Failed to save website configuration",
@@ -203,11 +223,8 @@ const Templates: React.FC = () => {
   useEffect(() => {
     const loadTemplates = async () => {
       try {
-        const response = await fetch('/api/templates');
-        if (!response.ok) throw new Error('Failed to load templates');
-        
-        const data = await response.json();
-        setTemplates(data);
+        const response = await templateService.getAllTemplates();
+        setTemplates(response.data.data);
       } catch (error) {
         console.error('Error loading templates:', error);
         toast({

@@ -31,6 +31,9 @@ from websites.views_public import (
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.views.static import serve
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create a router and register our viewsets with it
 router = DefaultRouter()
@@ -59,26 +62,22 @@ public_api_urlpatterns = [
 
 # Main URL patterns
 urlpatterns = [
+    # Admin URLs
     path('admin/', admin.site.urls),
+    
+    # API URLs - these must come before the frontend catch-all
     path('api/', include(api_urlpatterns)),
     path('public/api/', include(public_api_urlpatterns)),
+    
+    # Static files
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    
+    # Frontend catch-all - this must be last and should not match API routes
+    re_path(r'^(?!api/)(?!public/api/)(?!admin/)(?!static/)(?!media/).*$', FrontendAppView.as_view(), name='frontend'),
 ]
 
 # Serve static files in development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# Serve frontend static files
-def serve_frontend_static(request, path):
-    file_path = os.path.join(settings.STATICFILES_DIRS[0], path)
-    if os.path.exists(file_path):
-        return serve(request, path, document_root=settings.STATICFILES_DIRS[0])
-    return FrontendAppView.as_view()(request)
-
-# Add frontend routes
-urlpatterns += [
-    re_path(r'^static/(?P<path>.*)$', serve_frontend_static),
-    re_path(r'^assets/(?P<path>.*)$', serve_frontend_static),
-    re_path(r'^.*$', FrontendAppView.as_view(), name='frontend'),
-]

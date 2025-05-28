@@ -41,9 +41,9 @@ export const AnalyticsScripts: React.FC<AnalyticsScriptsProps> = ({ analytics, c
       bannerText: "${cookies.banner_text}",
       acceptButtonText: "${cookies.accept_button_text}",
       declineButtonText: "${cookies.decline_button_text}",
-      policyUrl: "${cookies.policy_url || ''}",
-      duration: ${cookies.duration},
-      categories: ${JSON.stringify(cookies.categories)}
+      policyUrl: "${cookies.cookie_policy_url || ''}",
+      duration: ${cookies.cookie_duration},
+      categories: ${JSON.stringify(cookies.cookie_categories)}
     };
   ` : '';
 

@@ -48,7 +48,7 @@ export const CookieSettings: React.FC<CookieSettingsProps> = ({ config, onChange
           <Label htmlFor="banner-text">Banner Text</Label>
           <Input
             id="banner-text"
-            value={config.banner_text}
+            value={config.banner_text || ''}
             onChange={(e) => handleChange('banner_text', e.target.value)}
             placeholder="We use cookies to enhance your experience..."
           />
@@ -79,7 +79,7 @@ export const CookieSettings: React.FC<CookieSettingsProps> = ({ config, onChange
           <Input
             id="policy-url"
             value={config.cookie_policy_url || ''}
-            onChange={(e) => handleChange('cookie_policy_url', e.target.value || null)}
+            onChange={(e) => handleChange('cookie_policy_url', e.target.value || '')}
             placeholder="https://yourdomain.com/cookie-policy"
           />
         </div>
@@ -90,7 +90,7 @@ export const CookieSettings: React.FC<CookieSettingsProps> = ({ config, onChange
             id="cookie-duration"
             type="number"
             value={config.cookie_duration}
-            onChange={(e) => handleChange('cookie_duration', parseInt(e.target.value))}
+            onChange={(e) => handleChange('cookie_duration', parseInt(e.target.value) || 0)}
             min={1}
             max={365}
           />

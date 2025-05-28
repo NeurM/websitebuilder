@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '@/components/ui/button';
+import { User } from '@/types/api';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -13,7 +14,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 
 export const Navigation: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth() as { user: User | null; logout: () => Promise<void> };
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -61,7 +62,7 @@ export const Navigation: React.FC = () => {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem className="ml-auto">
-              <NavigationMenuTrigger>{user.name}</NavigationMenuTrigger>
+              <NavigationMenuTrigger>{`${user.first_name} ${user.last_name}`}</NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid gap-3 p-4 w-[200px]">
                   <li>

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,11 +10,24 @@ import LanguageSelector from '@/components/navbar/LanguageSelector';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAnalytics } from '@/hooks/useAnalytics';
 
+// Debug logging setup
+const DEBUG = process.env.NODE_ENV === 'development';
+
+const debugLog = (message: string, ...args: any[]) => {
+  if (DEBUG) {
+    console.log(`[DEBUG] ${message}`, ...args);
+  }
+};
+
 const Index = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const { t } = useLanguage();
   const { trackEvent } = useAnalytics();
+  
+  useEffect(() => {
+    debugLog('Index component mounted', { user, loading });
+  }, [user, loading]);
   
   const navItems = [
     { name: "Home", path: "/" },
@@ -27,6 +39,17 @@ const Index = () => {
     phone: "(555) 123-4567",
     email: "contact@example.com",
   };
+
+  if (loading) {
+    debugLog('Index component is in loading state');
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  debugLog('Index component rendering with user state', { user });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">

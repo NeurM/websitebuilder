@@ -1,4 +1,3 @@
-
 import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
 import { expertRoutes } from './routes/expertRoutes';
@@ -6,6 +5,10 @@ import { tradecraftRoutes } from './routes/tradecraftRoutes';
 import { retailRoutes } from './routes/retailRoutes';
 import { serviceRoutes } from './routes/serviceRoutes';
 import { ErrorBoundary } from 'react-error-boundary';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { Layout } from '@/components/Layout';
+import { TemplateThemeProvider } from '@/context/TemplateThemeContext';
+import { CompanyDataProvider } from '@/context/CompanyDataContext';
 
 // Use direct imports instead of dynamic imports for core pages
 import Index from './pages/Index';
@@ -16,6 +19,9 @@ import WebsiteEditor from './pages/WebsiteEditor';
 import SavedWebsites from './pages/SavedWebsites';
 import NotFound from './pages/NotFound';
 import CleanSlate from './templates/cleanslate/CleanSlate';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import PreviewPage from './pages/PreviewPage';
 
 // Loading fallback
 const Loading = () => (
@@ -65,38 +71,50 @@ const withSuspense = (Component: React.ComponentType<any>) => {
 const mainRoutes = [
   {
     path: '/',
-    element: withSuspense(Index),
-    errorElement: <ErrorFallback />
+    element: (
+      <TemplateThemeProvider>
+        <CompanyDataProvider>
+          <Layout>
+            <Index />
+          </Layout>
+        </CompanyDataProvider>
+      </TemplateThemeProvider>
+    ),
+    errorElement: <ErrorFallback />,
+    children: [
+      {
+        index: true,
+        element: withSuspense(Dashboard)
+      },
+      {
+        path: 'templates',
+        element: withSuspense(Templates)
+      },
+      {
+        path: 'saved-websites',
+        element: withSuspense(SavedWebsites)
+      },
+      {
+        path: 'editor/:template',
+        element: withSuspense(EditorWrapper)
+      }
+    ]
   },
   {
     path: '/auth',
-    element: withSuspense(Auth),
+    element: withSuspense(Login),
     errorElement: <ErrorFallback />
   },
   {
-    path: '/dashboard',
-    element: withSuspense(Dashboard),
+    path: '/register',
+    element: withSuspense(Register),
     errorElement: <ErrorFallback />
   },
   {
-    path: '/templates',
-    element: withSuspense(Templates),
+    path: '/preview/:previewId',
+    element: withSuspense(PreviewPage),
     errorElement: <ErrorFallback />
-  },
-  {
-    path: '/editor/:template',
-    element: withSuspense(EditorWrapper),
-    errorElement: <ErrorFallback />
-  },
-  {
-    path: '/saved-websites',
-    element: withSuspense(SavedWebsites),
-    errorElement: <ErrorFallback />
-  },
-  {
-    path: '/websites',
-    element: <Navigate to="/saved-websites" replace />,
-  },
+  }
 ];
 
 // Template routes (lower z-index navbars)

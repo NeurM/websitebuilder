@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from "react";
 import { RouteConfig } from "../types/template";
 import { tradecraftData } from "../data/tradecraftData";
@@ -15,7 +14,7 @@ const TradecraftContact = lazy(() => import("../templates/tradecraft/Contact"));
 const TradecraftAuth = lazy(() => import("../templates/tradecraft/Auth"));
 
 // Create component wrapper for consistent rendering
-const createSuspenseWrapper = (Component) => (
+const createSuspenseWrapper = (Component: React.ComponentType) => (
   <Suspense fallback={<div className="w-full h-64 flex items-center justify-center">Loading...</div>}>
     <Component />
   </Suspense>

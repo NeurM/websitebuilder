@@ -14,7 +14,11 @@ from websites.views_public import (
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.views.static import serve
+from django.views.generic import TemplateView
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create a router and register our viewsets with it
 router = DefaultRouter()
@@ -25,8 +29,13 @@ router.register(r'preview-emails', PreviewEmailViewSet, basename='public-preview
 router.register(r'preview-email-trackers', PreviewEmailTrackerViewSet, basename='public-preview-email-tracker')
 router.register(r'bulk-website-creators', BulkWebsiteCreatorViewSet, basename='public-bulk-website-creator')
 
-# Public schema URL patterns
+# Public API URL patterns
 urlpatterns = [
+    path('', include(router.urls)),
+]
+
+# Public schema URL patterns
+urlpatterns += [
     # Admin URLs
     path('admin/', admin.site.urls),
     
@@ -43,14 +52,25 @@ if settings.DEBUG:
 
 # Serve frontend static files
 def serve_frontend_static(request, path):
+    logger.info(f"Serving frontend static file: {path}")
     file_path = os.path.join(settings.FRONTEND_DIR, path)
     if os.path.exists(file_path):
+        logger.info(f"File exists at: {file_path}")
         return serve(request, path, document_root=settings.FRONTEND_DIR)
+    logger.warning(f"File not found at: {file_path}")
     return FrontendAppView.as_view()(request)
 
 # Add frontend routes
 urlpatterns += [
-    re_path(r'^static/(?P<path>.*)$', serve_frontend_static),
-    re_path(r'^assets/(?P<path>.*)$', serve_frontend_static),
+    # Serve static files
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    re_path(r'^frontend_static/(?P<path>.*)$', serve, {'document_root': settings.FRONTEND_DIR}),
+    # Root URL - must be before the catch-all pattern
+    path('', FrontendAppView.as_view(), name='home'),
+    # Catch-all for frontend routes
     re_path(r'^.*$', FrontendAppView.as_view(), name='frontend'),
-] 
+]
+
+logger.info("URL patterns configured:")
+for pattern in urlpatterns:
+    logger.info(f"Pattern: {pattern}") 

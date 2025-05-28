@@ -1,9 +1,14 @@
 export interface User {
-  id: string;
-  name: string;
+  id: string | number;
+  username: string;
   email: string;
-  created_at: string;
-  updated_at: string;
+  first_name: string;
+  last_name: string;
+  date_joined: string;
+  last_login: string | null;
+  is_active: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
 }
 
 export interface AnalyticsConfig {
@@ -16,11 +21,16 @@ export interface AnalyticsConfig {
 export interface CookieConfig {
   enabled: boolean;
   banner_text: string | null;
-  accept_button_text: string | null;
-  decline_button_text: string | null;
-  policy_url: string | null;
-  duration: number;
-  categories: string[];
+  accept_button_text: string;
+  decline_button_text: string;
+  cookie_policy_url: string | null;
+  cookie_duration: number;
+  cookie_categories: {
+    necessary: boolean;
+    analytics: boolean;
+    marketing: boolean;
+    preferences: boolean;
+  };
 }
 
 export interface PreviewEmail {

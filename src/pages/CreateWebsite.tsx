@@ -25,9 +25,14 @@ const defaultCookies: CookieConfig = {
   banner_text: 'We use cookies to enhance your experience.',
   accept_button_text: 'Accept All',
   decline_button_text: 'Decline All',
-  policy_url: null,
-  duration: 365,
-  categories: ['necessary', 'analytics', 'marketing', 'preferences'],
+  cookie_policy_url: null,
+  cookie_duration: 365,
+  cookie_categories: {
+    necessary: true,
+    analytics: true,
+    marketing: true,
+    preferences: true,
+  },
 };
 
 export const CreateWebsite: React.FC = () => {

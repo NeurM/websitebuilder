@@ -3,7 +3,16 @@ import type { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axio
 import { ApiResponse, WebsiteConfig, Template, WebsiteStats, DeploymentInfo, PaginatedResponse } from '@/types/api';
 import { authService } from './auth';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/public/api';
+
+// Debug logging setup
+const DEBUG = process.env.NODE_ENV === 'development';
+
+const debugLog = (message: string, ...args: any[]) => {
+  if (DEBUG) {
+    console.log(`[API DEBUG] ${message}`, ...args);
+  }
+};
 
 const api = axios.create({
   baseURL: API_URL,
@@ -14,18 +23,42 @@ const api = axios.create({
 
 // Add request interceptor to include auth token
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  debugLog('Making API request:', {
+    method: config.method?.toUpperCase(),
+    url: config.url,
+    headers: config.headers,
+    data: config.data,
+  });
+
   const token = authService.getToken();
   if (token && config.headers) {
-    config.headers.Authorization = `Token ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
+    debugLog('Added auth token to request');
   }
   return config;
 });
 
 // Add response interceptor to handle errors
 api.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    debugLog('Received API response:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      data: response.data,
+    });
+    return response;
+  },
   (error: AxiosError) => {
+    debugLog('API request failed:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message,
+    });
+
     if (error.response?.status === 401) {
+      debugLog('Authentication failed, logging out user');
       authService.logout();
       window.location.href = '/login';
     }

@@ -50,19 +50,13 @@ const TemplateThemeContext = createContext<TemplateThemeContextProps>({
 export const useTemplateTheme = () => useContext(TemplateThemeContext);
 
 export const TemplateThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Get current path - use try/catch to handle cases outside Router context
-  const getPath = (): string => {
-    try {
-      // Only use useLocation if we're in a router context
-      const location = useLocation();
-      return location.pathname;
-    } catch (error) {
-      console.warn('TemplateThemeProvider: useLocation failed, defaulting to "/"', error);
-      return '/';
-    }
-  };
-  
-  const pathname = getPath();
+  let pathname = '/';
+  try {
+    const location = useLocation();
+    pathname = location?.pathname || '/';
+  } catch (error) {
+    console.warn('Router not yet initialized:', error);
+  }
   
   const getTemplateTypeFromPath = (path: string) => {
     if (path.startsWith('/tradecraft')) return 'tradecraft';
@@ -91,6 +85,18 @@ export const TemplateThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const [secondaryColor, setSecondaryColor] = useState<string>(defaultColors.secondary);
   const [previousTemplateColor, setPreviousTemplateColor] = useState<string | null>(null);
   const [previousSecondaryColor, setPreviousSecondaryColor] = useState<string | null>(null);
+
+  // Update colors when pathname changes
+  useEffect(() => {
+    try {
+      const newTemplateType = getTemplateTypeFromPath(pathname);
+      const newDefaultColors = getDefaultColors(newTemplateType);
+      setTemplateColor(newDefaultColors.primary);
+      setSecondaryColor(newDefaultColors.secondary);
+    } catch (error) {
+      console.warn('Error updating colors:', error);
+    }
+  }, [pathname]);
   
   const updateTemplateColor = async (color: string) => {
     setPreviousTemplateColor(templateColor);
@@ -210,112 +216,29 @@ export const TemplateThemeProvider: React.FC<{ children: React.ReactNode }> = ({
               });
               
               toast({
-                title: "Colors Reset",
-                description: "Colors have been reset to previous selection.",
+                title: "Colors Restored",
+                description: "Colors have been restored to their previous values.",
               });
             }
           } catch (error) {
-            console.error('Error resetting color scheme:', error);
+            console.error('Error restoring color scheme:', error);
           }
         }
       } catch (error) {
-        console.error('Error resetting colors:', error);
+        console.error('Error restoring colors:', error);
       }
     }
   };
-  
-  useEffect(() => {
-    const loadSavedColors = async () => {
-      if (templateType) {
-        try {
-          // First try to get colors from sessionStorage
-          const sessionData = sessionStorage.getItem('companyData');
-          if (sessionData) {
-            const parsedData = JSON.parse(sessionData);
-            if (parsedData.colorScheme) {
-              setTemplateColor(parsedData.colorScheme);
-            }
-            if (parsedData.secondaryColorScheme) {
-              setSecondaryColor(parsedData.secondaryColorScheme);
-            }
-          }
-          
-          // Then try to get from database
-          const { data: config } = await getWebsiteConfig(templateType);
-          const defaultColors = getDefaultColors(templateType);
-          
-          if (config?.color_scheme) {
-            setTemplateColor(config.color_scheme);
-            
-            // Update in sessionStorage
-            if (sessionData) {
-              const parsedData = JSON.parse(sessionData);
-              parsedData.colorScheme = config.color_scheme;
-              sessionStorage.setItem('companyData', JSON.stringify(parsedData));
-            }
-          } else {
-            setTemplateColor(defaultColors.primary);
-          }
-          
-          if (config?.secondary_color_scheme) {
-            setSecondaryColor(config.secondary_color_scheme);
-            
-            // Update in sessionStorage
-            if (sessionData) {
-              const parsedData = JSON.parse(sessionData);
-              parsedData.secondaryColorScheme = config.secondary_color_scheme;
-              sessionStorage.setItem('companyData', JSON.stringify(parsedData));
-            }
-          } else {
-            setSecondaryColor(defaultColors.secondary);
-          }
-          
-          setPreviousTemplateColor(null);
-          setPreviousSecondaryColor(null);
-        } catch (error) {
-          console.error('Error loading saved colors:', error);
-          const defaultColors = getDefaultColors(templateType);
-          setTemplateColor(defaultColors.primary);
-          setSecondaryColor(defaultColors.secondary);
-        }
-      }
-    };
-    
-    loadSavedColors();
-  }, [templateType]);
-  
+
   const getColorClasses = (primaryColor: string, secondaryColor: string) => {
-    // For Clean Slate template, use special handling
-    if (templateType === 'cleanslate') {
-      return {
-        bg: `bg-black`,
-        text: `text-black`,
-        hover: `hover:bg-gray-800`,
-        muted: `text-gray-700`,
-        border: `border-black`,
-        secondaryBg: `bg-gray-600`,
-        secondaryText: `text-gray-600`,
-        secondaryHover: `hover:bg-gray-700`,
-        secondaryMuted: `text-gray-500`,
-        secondaryBorder: `border-gray-600`,
-      };
-    }
-    
-    // Safe handling for Tailwind classes
     const safeColor = (color: string) => {
-      // Map any custom or invalid colors to defaults
-      const validColors = [
-        'blue', 'red', 'green', 'yellow', 'purple', 
-        'pink', 'indigo', 'gray', 'black', 'white',
-        'teal', 'orange', 'amber'
-      ];
-      
+      const validColors = ['blue', 'green', 'red', 'yellow', 'purple', 'pink', 'indigo', 'gray', 'black', 'white', 'orange', 'teal', 'amber'];
       return validColors.includes(color) ? color : 'blue';
     };
-    
+
     const primary = safeColor(primaryColor);
     const secondary = safeColor(secondaryColor);
-    
+
     return {
       bg: `bg-${primary}-600`,
       text: `text-${primary}-600`,
@@ -329,22 +252,20 @@ export const TemplateThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       secondaryBorder: `border-${secondary}-600`,
     };
   };
-  
-  const colorClasses = getColorClasses(templateColor, secondaryColor);
-  
+
+  const value = {
+    templateColor,
+    setTemplateColor: updateTemplateColor,
+    secondaryColor,
+    setSecondaryColor: updateSecondaryColor,
+    previousTemplateColor,
+    undoTemplateColorChange,
+    templateType,
+    colorClasses: getColorClasses(templateColor, secondaryColor),
+  };
+
   return (
-    <TemplateThemeContext.Provider 
-      value={{ 
-        templateColor, 
-        setTemplateColor: updateTemplateColor,
-        secondaryColor,
-        setSecondaryColor: updateSecondaryColor,
-        previousTemplateColor,
-        undoTemplateColorChange,
-        templateType,
-        colorClasses,
-      }}
-    >
+    <TemplateThemeContext.Provider value={value}>
       {children}
     </TemplateThemeContext.Provider>
   );

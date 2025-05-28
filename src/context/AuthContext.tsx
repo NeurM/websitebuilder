@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '@/services/auth';
 import { User } from '@/types/api';
 
 interface AuthContextType {
@@ -20,62 +19,123 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const initAuth = async () => {
+    const checkAuth = async () => {
       try {
+        setLoading(true);
+        // Check if user is logged in
         const token = localStorage.getItem('token');
         if (token) {
-          const userData = await authService.getCurrentUser();
-          setUser(userData);
+          // TODO: Replace with actual API call
+          const mockUser: User = {
+            id: '1',
+            username: 'test@example.com',
+            email: 'test@example.com',
+            first_name: 'Test',
+            last_name: 'User',
+            date_joined: new Date().toISOString(),
+            last_login: new Date().toISOString(),
+            is_active: true,
+            is_staff: false,
+            is_superuser: false,
+          };
+          setUser(mockUser);
         }
       } catch (err) {
-        console.error('Failed to initialize auth:', err);
+        console.error('Auth check failed:', err);
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
-    initAuth();
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setError(null);
-      const { user: userData, token } = await authService.login(email, password);
-      localStorage.setItem('token', token);
-      setUser(userData);
+      setLoading(true);
+      // TODO: Replace with actual API call
+      const mockUser: User = {
+        id: '1',
+        username: email,
+        email: email,
+        first_name: 'Test',
+        last_name: 'User',
+        date_joined: new Date().toISOString(),
+        last_login: new Date().toISOString(),
+        is_active: true,
+        is_staff: false,
+        is_superuser: false,
+      };
+      localStorage.setItem('token', 'mock-token');
+      setUser(mockUser);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to login';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (email: string, password: string, name: string) => {
     try {
       setError(null);
-      const { user: userData, token } = await authService.register(email, password, name);
-      localStorage.setItem('token', token);
-      setUser(userData);
+      setLoading(true);
+      // TODO: Replace with actual API call
+      const mockUser: User = {
+        id: '1',
+        username: email,
+        email: email,
+        first_name: name.split(' ')[0] || '',
+        last_name: name.split(' ').slice(1).join(' ') || '',
+        date_joined: new Date().toISOString(),
+        last_login: new Date().toISOString(),
+        is_active: true,
+        is_staff: false,
+        is_superuser: false,
+      };
+      localStorage.setItem('token', 'mock-token');
+      setUser(mockUser);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to register');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to register';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      await authService.logout();
+      setError(null);
+      setLoading(true);
       localStorage.removeItem('token');
       setUser(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to logout');
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to logout';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   const clearError = () => setError(null);
 
+  const value = {
+    user,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    clearError,
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout, clearError }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
